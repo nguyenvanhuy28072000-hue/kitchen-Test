@@ -1,13 +1,13 @@
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBzlvVUxZrMaU8OxYve9GNts1ZdCz35CWk",
-  authDomain: "kitchen-app-31fa9.firebaseapp.com",
-  projectId: "kitchen-app-31fa9",
-  storageBucket: "kitchen-app-31fa9.firebasestorage.app",
-  messagingSenderId: "18408555856",
-  appId: "1:18408555856:web:92c8e60694715661f5d855",
-  measurementId: "G-H3N20HZ09Z"
+  apiKey: "AIzaSyA3XNJMXm5vG8InUHKqcR57RzlbD2sAAvM",
+  authDomain: "kitchentest-2d072.firebaseapp.com",
+  projectId: "kitchentest-2d072",
+  storageBucket: "kitchentest-2d072.firebasestorage.app",
+  messagingSenderId: "448725819335",
+  appId: "1:448725819335:web:028eb7e3923f1b163f03e2",
+  measurementId: "G-CZTCSGJZBW"
 };
 
 // 初期化（compat版）
