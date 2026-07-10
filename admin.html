@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>コース管理</title>
+
+<style>
+
+body{
+    font-family:sans-serif;
+    max-width:700px;
+    margin:auto;
+    padding:20px;
+    background:#f5f5f5;
+}
+
+h2{
+    text-align:center;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+
+label{
+    font-weight:bold;
+}
+
+select,
+input,
+textarea,
+button{
+
+    width:100%;
+    font-size:18px;
+    margin-top:8px;
+    margin-bottom:15px;
+    padding:10px;
+    box-sizing:border-box;
+
+}
+
+textarea{
+
+    height:260px;
+
+}
+
+button{
+
+    cursor:pointer;
+
+}
+
+.row{
+
+    display:flex;
+    gap:10px;
+
+}
+
+.row button{
+
+    flex:1;
+
+}
+
+hr{
+
+    margin:25px 0;
+
+}
+#dishList div{
+    display:flex;
+    gap:10px;
+    margin-bottom:10px;
+}
+
+#dishList input{
+    flex:1;
+    margin:0;
+}
+
+#dishList button{
+    width:90px;
+    margin:0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>コース管理</h2>
+
+<label>コース選択</label>
+
+<select id="courseSelect"></select>
+
+<div class="row">
+
+<button onclick="loadCourse()">読込</button>
+<button onclick="addCourse()"> ＋コース追加</button>
+<button onclick="saveCourse()">保存</button>
+
+</div>
+
+<hr><label>コース時間（分）</label>
+
+<input
+type="number"
+id="duration">
+
+<label>料理一覧</label>
+
+<div id="dishList"></div>
+
+<button onclick="addDish()">＋料理追加</button>
+
+<hr><button onclick="renameCourse()">コース名変更</button>
+
+<hr>
+<button
+style="background:#ff6666;color:white;"
+onclick="deleteCourse()">
+コース削除
+</button>
+
+<br><br>
+
+<button
+onclick="location.href='index.html'">
+
+← 管理画面へ戻る
+
+</button>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script src="firebase.js"></script>
+<script src="admin.js"></script>
+
+</body>
+</html>

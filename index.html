@@ -1,0 +1,289 @@
+<!DOCTYPE html> 
+<html lang="ja"> 
+<head> 
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+     
+        <title>キッチンコース管理</title>
+        <style>
+            body{
+                font-family:sans-serif;
+                margin:5px;
+            }
+            h4{ 
+                text-align:center;      /*文字が中央にある*/
+             } 
+        
+            .controls{
+                margin-bottom:3px;     /*入力項目ごとの下の余白をあける*/
+            }
+ 
+            select,button{      /*選択、クリックボタン*/
+                padding:6px;   /*[内側」の余白*/
+                font-size:16px;  /*文字サイズ*/
+                margin-right:3px;  /*要素の境界線の「右の外側」の余白*/
+            }
+
+            
+            input{      /* 入力ボタン */
+                text-align: center;     /*文字が中央にある*/
+                width: 73px;
+                height: 25px;
+                font-size: 17px;
+            }
+
+            button{
+                cursor:pointer;  /*要素にマウスカーソルを乗せたときに、矢印から「指さしマーク」に変化させる*/
+            }
+            table{
+                width:100%;
+                border-collapse:collapse;
+                background:rgb(244, 240, 240);
+            }
+            body{
+                overflow-x:auto;
+            }
+            th,td{      /*th:表の見出し、td:表のデータ（中身）*/
+                border:1px solid #ccc;
+                padding:1px;
+                text-align:center;
+            }
+            th{     /*表の見出し*/
+                background:#333;
+                color:white;
+            }
+            .dish{  /*料理カード全体のスタイル*/
+                width: 8%;
+                cursor:pointer;
+                font-weight:bold;
+            }
+            .done{      /*料理カードの中にある「完了」バッジだけのスタイル*/
+                background:#666 !important;
+                color:#bbb !important;
+               opacity:0.6;
+                text-decoration:line-through;
+            }
+            button:first-child {
+                color: blue;
+                    padding:5px;
+            }
+
+            button:last-child {
+                color: red;
+                    padding:5px;
+            }
+
+                /*料理カードの色設定*/
+                .dish0 {
+                    background-color: #ffd6d6;
+                }
+
+                .dish1 {
+                    background-color: #fff0b3;
+                }
+
+                .dish2 {
+                    background-color: #d6f5d6;
+                }
+                
+                .dish3 {
+                    background-color: #d6ecff;
+                }
+                
+                .dish4 {
+                    background-color: #e6d6ff;
+                }
+                
+                .dish5 {
+                    background-color: #ffd9f0;
+                }
+                
+                .dish6 {
+                    background-color: #ffe4cc;
+                }
+                
+                .dish7 {
+                    background-color: #d9fff2;
+                }
+                
+                .dish8 {
+                    background-color: #f0f0f4;
+                }
+                
+                
+               .loYellow{
+                    background:#fff176;
+                    font-weight:bold;
+                }
+                .extraDish{
+                    background:#ffd699;
+                    color:#000;
+                }
+               
+                
+                @keyframes blink{
+                  50%{
+                    opacity:0.4;
+                  }
+                }
+                
+                .loRed{
+                    background:#ff0000;
+                    color:white;
+                    font-weight:bold;
+                    animation:blink 1s infinite;
+                }
+               .sectionTitle{
+                 background:#333;
+                 color:white;
+                 font-size:12px;
+                 font-weight:bold;
+                 text-align:center;
+               }
+               .progressWrap{
+    width:100%;
+    height:5px;
+    background:#ddd;
+border-radius:3px;
+}
+
+.progressBar{
+
+    height:100%;
+
+    background:#4caf50;
+
+    border-radius:3px;
+
+    transition:width 60s linear;
+
+}
+
+.progressYellow{
+    background:#ffb600;
+}
+
+.progressRed{
+    background:#ff0000;
+    animation:blink 1s infinite;
+}
+
+.progressBar{
+
+    position:relative;
+
+}
+.progressBar::after{
+    content:"";
+    position:absolute;
+    right:-6px;
+    top:-4px;
+
+    width:12px;
+    height:12px;
+
+    border-radius:50%;
+    background:inherit;
+
+    border:2px solid white;
+}
+
+        </style>
+
+</head>
+<body>
+
+
+    <!--<h4>キッチンコース管理</h4> --> 
+    <div class="controls">
+ <input type="time" id="courseTime">
+            
+ <select id="courseSelect">　      
+ </select>
+
+            
+ <input type="number" id="people" placeholder="人数" style="width: 50px;" min = 1>
+ <input type="text" id="tableNo" placeholder="テーブル">
+
+ <button onclick="addCourse()">追加</button>
+
+    </div>
+        <table>
+            <thead>
+                <tr>
+ <!--   <th>順序</th> -->
+    <th>追加</th>
+    <th>削除</th>
+    <th>時間</th>
+    <th>コース</th>
+    <th>人数</th>
+    <th>卓番</th>
+    <th>L.O.</th>
+
+    <th>料理①</th>
+    <th>料理②</th>
+    <th>料理③</th>
+    <th>料理④</th>
+    <th>料理⑤</th>
+    <th>料理⑥</th>
+    <th>料理⑦</th>
+    <th>料理⑧</th>
+    <th>料理⑨</th>
+
+    <th>追加料理</th>
+</tr>
+            </thead>
+
+        <tbody id="courseBody"></tbody>
+        </table>
+
+        <h3>完了コース</h3>
+<div style="overflow-x:auto;">
+<table>
+        <thead>
+                <tr>
+                　　<th>時間</th>
+                    <th>コース</th>  
+                    <th>人数</th>
+                    <th>卓番</th>
+                    <th>完了時間</th>
+                　　<th>操作</th>
+                </tr>
+        </thead>
+
+<tbody id="completedBody"></tbody>
+        
+</table>
+</div>
+        
+       <!-- Firebase compat（iOS12対応） -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- あなたのコード -->
+<script src="firebase.js"></script>
+<script src="script.js?v=2"></script>
+
+     <div style="text-align:center; margin:30px 0;">
+    <button onclick="logout()" style="
+        padding:12px 30px;
+        font-size:18px;
+        background:#d9534f;
+        color:white;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+    ">
+        ログアウト
+    </button>
+     </div>
+     
+     <hr>
+
+<button onclick="location.href='admin.html'">
+コース管理
+</button>
+
+</body>
+</html>
