@@ -426,24 +426,61 @@ function toggleDish(orderId, index) {
 
 function toggleExtraDish(orderId,index){
 
-  const ref =
+    const ref =
     window.db.collection("orders").doc(orderId);
 
-  ref.get().then(doc=>{
+    ref.get().then(function(doc){
 
-    const data = doc.data();
+        const data = doc.data();
 
-    const extra =
-      data.extraDishes || [];
+        const extra = data.extraDishes || [];
 
-    extra[index].done =
-      !extra[index].done;
+        // 提供状態切替
+        extra[index].done =
+        !extra[index].done;
 
-    ref.update({
-      extraDishes:extra
+        // 全部提供済み？
+        const allDone =
+        data.dishes.every(function(d){
+            return d.done;
+        }) &&
+        extra.every(function(d){
+            return d.done;
+        });
+
+        if(allDone){
+
+            window.db.collection("completedOrders").add({
+
+                time:data.time,
+                course:data.course,
+                people:data.people,
+                table:data.table,
+                dishes:data.dishes,
+                extraDishes:extra,
+                createdAt:data.createdAt,
+
+                completedTime:
+                new Date().toLocaleTimeString("ja-JP"),
+
+                completedAt:
+                Date.now()
+
+            });
+
+            ref.delete();
+
+        }else{
+
+            ref.update({
+
+                extraDishes:extra
+
+            });
+
+        }
+
     });
-
-  });
 
 }
 
