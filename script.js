@@ -405,9 +405,29 @@ function toggleDish(orderId, index) {
   ref.get().then(doc => {
     const data = doc.data();
 
+    const extra = data.extraDishes || [];
+    
     data.dishes[index].done = !data.dishes[index].done;
 
-    const allDone = data.dishes.every(d => d.done);
+    const allDone =
+
+    data.dishes.every(function(d){
+
+        return d.done;
+
+    }) &&
+
+    (
+
+        extra.length === 0 ||
+
+        extra.every(function(d){
+
+            return d.done;
+
+        })
+
+    );
 
 //全部完了したら「conpleteOrder」に移動
     if (allDone) {
