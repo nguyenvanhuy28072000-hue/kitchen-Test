@@ -56,8 +56,10 @@ function addCourse() {
   }
 
 //注文データ作成。
-  window.db.collection("orders").add({
+    const user = firebase.auth().currentUser;
+    window.db.collection("orders").add({
     //基本情報
+    userId: user.uid,
     time,
     course,
     people: Number(people),
@@ -471,7 +473,7 @@ function toggleExtraDish(orderId,index){
         if(allDone){
 
             window.db.collection("completedOrders").add({
-
+                userId:data.userId,
                 time:data.time,
                 course:data.course,
                 people:data.people,
@@ -702,21 +704,27 @@ firebase.auth().onAuthStateChanged(user => {
         return;
     }
     loadCourses().then(()=>{
+        const user = firebase.auth().currentUser;
         window.db.collection("orders")
+        .where("userId","==",user.uid)
         .onSnapshot(snapshot=>{
+            
             latestSnapshot = snapshot;
             renderOrders(snapshot);
         });
         window.db.collection("completedOrders")
+        .where("userId","==",user.uid)
         .onSnapshot(snapshot=>{
-        renderCompleted(snapshot);
+           
+             renderCompleted(snapshot);
         });
     });
 });
 //㉒ 1秒ごと更新
 setInterval(() => {
-
-  window.db.collection("orders")
+    const user = firebase.auth().currentUser;
+    window.db.collection("orders")
+    .where("userId","==",user.uid)
     .get()
     .then(snapshot => {
 
