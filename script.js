@@ -8,7 +8,7 @@ function loadCourses(){
     const user =
     firebase.auth().currentUser;
 
-
+　
     return window.db
     .collection("users")
     .doc(user.uid)
