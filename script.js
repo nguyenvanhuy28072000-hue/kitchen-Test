@@ -5,30 +5,8 @@ let courseDuration = {};
 
 function loadCourses(){
 
-    const user =
-    firebase.auth().currentUser;
-
-　
-    return window.db
-    .collection("users")
-    .doc(user.uid)
+    return window.db.collection("courses")
     .get()
-
-    .then(userDoc=>{
-
-
-        const shopId =
-        userDoc.data().shopId;
-
-
-        return window.db
-        .collection("shops")
-        .doc(shopId)
-        .collection("courses")
-        .get();
-
-    })
-
     .then(snapshot=>{
 
         courseData = {};
@@ -79,11 +57,9 @@ function addCourse() {
 
 //注文データ作成。
     const user = firebase.auth().currentUser;
-    const shopId = "kyoto001";
     window.db.collection("orders").add({
     //基本情報
     userId: user.uid,
-    shopId: shopId,
     time,
     course,
     people: Number(people),
@@ -327,7 +303,6 @@ if(order.extraDishes){
     html += `
 </tr>
 
-
 <tr style="background:${rowColor}">
   <td colspan="7"></td>
 
@@ -380,7 +355,6 @@ if(order.extraDishes){
     [field]: field === "people" ? Number(value) : value
   });
 }
-
 
 //⑮ 完了済み表示
 function renderCompleted(snapshot) {
@@ -720,7 +694,6 @@ window.dragDish = dragDish;
 window.dropDish = dropDish;
 window.dragExtraDish = dragExtraDish;
 window.dropExtraDish = dropExtraDish;
-
 
 firebase.auth().onAuthStateChanged(user => {
     if (!user){
