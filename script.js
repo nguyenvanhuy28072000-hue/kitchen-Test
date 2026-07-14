@@ -5,8 +5,30 @@ let courseDuration = {};
 
 function loadCourses(){
 
-    return window.db.collection("courses")
+    const user =
+    firebase.auth().currentUser;
+
+
+    return window.db
+    .collection("users")
+    .doc(user.uid)
     .get()
+
+    .then(userDoc=>{
+
+
+        const shopId =
+        userDoc.data().shopId;
+
+
+        return window.db
+        .collection("shops")
+        .doc(shopId)
+        .collection("courses")
+        .get();
+
+    })
+
     .then(snapshot=>{
 
         courseData = {};
@@ -57,9 +79,11 @@ function addCourse() {
 
 //注文データ作成。
     const user = firebase.auth().currentUser;
+    const shopId = "kyoto001";
     window.db.collection("orders").add({
     //基本情報
     userId: user.uid,
+    shopId: shopId,
     time,
     course,
     people: Number(people),
