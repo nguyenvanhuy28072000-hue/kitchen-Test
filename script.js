@@ -723,6 +723,9 @@ firebase.auth().onAuthStateChanged(user => {
 //㉒ 1秒ごと更新
 setInterval(() => {
     const user = firebase.auth().currentUser;
+    
+    if(!user) return;
+    
     window.db.collection("orders")
     .where("userId","==",user.uid)
     .get()
@@ -772,7 +775,7 @@ setInterval(() => {
 },1000);
 
 setInterval(() => {
-
+    
   if(latestSnapshot){
     renderOrders(latestSnapshot);
   }
