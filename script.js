@@ -678,6 +678,18 @@ if(order.extraDishes){
 
     `
 
+    <!-- L.O.通知エリア -->
+
+    <tr>
+
+        <td colspan="20" style="padding:10px;">
+
+            <div id="loNotificationArea"></div>
+
+        </td>
+
+    </tr>
+
     <tr>
 
         <td colspan="20" class="sectionTitle">
