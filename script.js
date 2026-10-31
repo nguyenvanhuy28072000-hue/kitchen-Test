@@ -222,6 +222,7 @@ function renderLONotifications(){
 
             html += `
                 <div class="loNoticeOrder">
+                    ${escapeLOText(order.time)}
                     ${escapeLOText(order.course)}コース　
                     ${escapeLOText(order.people)}名　
                     テーブル: ${escapeLOText(order.table)}
