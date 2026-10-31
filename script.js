@@ -668,16 +668,6 @@ if(order.extraDishes){
 
     </tr>
 
-    `
-
-    +
-
-    startedHtml
-
-    +
-
-    `
-
     <!-- L.O.通知エリア -->
 
     <tr>
@@ -689,6 +679,16 @@ if(order.extraDishes){
         </td>
 
     </tr>
+
+    `
+
+    +
+
+    startedHtml
+
+    +
+
+    `
 
     <tr>
 
@@ -702,7 +702,7 @@ if(order.extraDishes){
 
     `
 
-    + 
+    +
 
     waitingHtml;
 }
