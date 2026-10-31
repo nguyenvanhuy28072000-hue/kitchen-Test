@@ -3,6 +3,24 @@ let latestSnapshot = null;
 let courseData = {};
 let courseDuration = {};
 
+// 音声通知用
+
+let audioContext = null;
+
+let soundInterval = null;
+
+// 通知済みの記録
+
+let notifiedAlerts = {};
+
+// 現在表示中の通知
+
+let activeNotifications = {};
+
+// 音を止めた状態かどうか
+
+let alarmSoundStopped = true;
+
 function loadCourses(){
 
     return window.db.collection("courses")
@@ -35,6 +53,303 @@ function loadCourses(){
 
     });
 
+}
+
+// 音を有効にする
+function enableSound(){
+
+    const AudioCtx =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+    if(!AudioCtx){
+        alert("このブラウザは音声に対応していません");
+        return;
+    }
+
+    if(!audioContext){
+        audioContext = new AudioCtx();
+    }
+
+    if(audioContext.state === "suspended"){
+        audioContext.resume();
+    }
+
+    // 動作確認音
+    playAlarm(800);
+
+    // 通知が残っていれば音を開始
+    startAlarmSound();
+}
+
+
+// 音を鳴らす
+function playAlarm(frequency){
+
+    if(!audioContext) return;
+
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
+
+    oscillator.frequency.value = frequency;
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    gain.gain.value = 0.3;
+
+    oscillator.start();
+
+    oscillator.stop(
+        audioContext.currentTime + 0.3
+    );
+}
+
+
+// 繰り返し音を鳴らす
+function startAlarmSound(){
+
+    if(!audioContext) return;
+    if(alarmSoundStopped) return;
+    if(soundInterval) return;
+
+    if(Object.keys(activeNotifications).length === 0){
+        return;
+    }
+
+    // 1.5秒ごとに音を鳴らす
+    soundInterval = setInterval(function(){
+
+        let frequency = 700;
+
+        // L.O.過ぎの通知があれば高い音にする
+        Object.keys(activeNotifications).forEach(function(key){
+
+            if(activeNotifications[key].stage === "passed"){
+                frequency = 1200;
+            }
+
+        });
+
+        playAlarm(frequency);
+
+    }, 1500);
+}
+
+
+// 音と通知を止める
+function stopLOAlarm(){
+
+    if(soundInterval){
+        clearInterval(soundInterval);
+        soundInterval = null;
+    }
+
+    activeNotifications = {};
+
+    alarmSoundStopped = true;
+
+    renderLONotifications();
+}
+
+
+// 通知画面を表示する
+function renderLONotifications(){
+
+    const area =
+        document.getElementById("loNotificationArea");
+
+    if(!area) return;
+
+    const keys = Object.keys(activeNotifications);
+
+    if(keys.length === 0){
+        area.innerHTML = "";
+        return;
+    }
+
+    // L.O.時間順に並べる
+    keys.sort(function(a,b){
+
+        return activeNotifications[a].loTime -
+               activeNotifications[b].loTime;
+
+    });
+
+    let html = `
+        <div class="loNoticeBox">
+
+            <h3>🔔 L.O.通知</h3>
+    `;
+
+    keys.forEach(function(key){
+
+        const notice = activeNotifications[key];
+
+        const lo = new Date(notice.loTime);
+
+        const loText =
+            String(lo.getHours()).padStart(2,"0") +
+            ":" +
+            String(lo.getMinutes()).padStart(2,"0");
+
+        const label =
+            notice.stage === "passed"
+            ? "L.O.過ぎ"
+            : "L.O.10分前";
+
+        html += `
+            <div class="loNoticeGroup">
+
+                <h3>${loText}　${label}</h3>
+        `;
+
+        notice.orders.forEach(function(order){
+
+            html += `
+                <div class="loNoticeOrder">
+                    ${escapeLOText(order.course)}コース　
+                    ${escapeLOText(order.people)}名　
+                    テーブル${escapeLOText(order.table)}
+                </div>
+            `;
+
+        });
+
+        html += `
+            </div>
+        `;
+
+    });
+
+    html += `
+            <button onclick="stopLOAlarm()">
+                🔕 音を止める
+            </button>
+
+        </div>
+    `;
+
+    area.innerHTML = html;
+}
+
+
+// 表示用の文字を安全に処理する
+function escapeLOText(value){
+
+    return String(value == null ? "" : value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+}
+
+
+// L.O.通知をチェックする
+function checkLOAlarms(docs){
+
+    const now = Date.now();
+
+    const groups = {};
+
+    // 同じL.O.時間の注文をまとめる
+    docs.forEach(function(doc){
+
+        const order = doc.data();
+
+        const parts = order.time.split(":");
+
+        const duration =
+            courseDuration[order.course];
+
+        if(!duration) return;
+
+        const start = new Date();
+
+        start.setHours(
+            Number(parts[0]),
+            Number(parts[1]),
+            0,
+            0
+        );
+
+        const loTime =
+            start.getTime() + duration * 60000;
+
+        const key = String(loTime);
+
+        if(!groups[key]){
+            groups[key] = {
+                loTime: loTime,
+                orders: []
+            };
+        }
+
+        groups[key].orders.push(order);
+
+    });
+
+
+    // 通知する時間か確認
+    Object.keys(groups).forEach(function(key){
+
+        const group = groups[key];
+
+        let stage = "";
+
+        if(now >= group.loTime){
+
+            stage = "passed";
+
+        }else if(now >= group.loTime - 10 * 60000){
+
+            stage = "before";
+
+        }
+
+        if(!stage) return;
+
+        const alertKey = key + "_" + stage;
+
+        // L.O.10分前の通知が残っている場合、
+        // L.O.過ぎに切り替える
+        if(stage === "passed"){
+
+            delete activeNotifications[key + "_before"];
+
+        }
+
+        // まだ通知していない場合だけ新規通知
+        if(!notifiedAlerts[alertKey]){
+
+            notifiedAlerts[alertKey] = true;
+
+            activeNotifications[alertKey] = {
+                loTime: group.loTime,
+                stage: stage,
+                orders: group.orders
+            };
+
+            // 新しい通知なので音を再開
+            alarmSoundStopped = false;
+
+        }else if(activeNotifications[alertKey]){
+
+            // 同じL.O.時間の注文が追加された場合も一覧を更新
+            activeNotifications[alertKey].orders =
+                group.orders;
+
+        }
+
+    });
+
+    renderLONotifications();
+
+    startAlarmSound();
 }
 
 //③ コース追加
@@ -683,6 +998,8 @@ function dropExtraDish(orderId,dropIndex){
 }
 
 window.logout = logout;
+window.enableSound = enableSound;
+window.stopLOAlarm = stopLOAlarm;
 window.addCourse = addCourse;
 window.deleteOrder = deleteOrder;
 window.updateField = updateField;
@@ -719,53 +1036,59 @@ firebase.auth().onAuthStateChanged(user => {
 });
 //㉒ 1秒ごと更新
 setInterval(() => {
+
     const user = firebase.auth().currentUser;
-    
+
     if(!user) return;
-    
+
     window.db.collection("orders")
     .where("userId","==",user.uid)
     .get()
     .then(snapshot => {
 
-      snapshot.forEach(doc => {
+        // L.O.通知を確認
+        checkLOAlarms(snapshot.docs);
 
-        const order = doc.data();
-        const id = doc.id;
+        // 進捗バーを更新
+        snapshot.forEach(doc => {
 
-        const [h,m] =
-          order.time.split(":");
+            const order = doc.data();
+            const id = doc.id;
 
-        const now = new Date();
+            const [h,m] = order.time.split(":");
 
-        const startMinutes =
-          Number(h) * 60 + Number(m);
+            const now = new Date();
 
-        const nowMinutes =
-          now.getHours() * 60 +
-          now.getMinutes();
+            const startMinutes =
+                Number(h) * 60 + Number(m);
 
-        const duration =
-          courseDuration[order.course];
+            const nowMinutes =
+                now.getHours() * 60 +
+                now.getMinutes();
 
-        let progress =
-          ((nowMinutes - startMinutes)
-          / duration) * 100;
+            const duration =
+                courseDuration[order.course];
 
-        if(progress < 0) progress = 0;
-        if(progress > 100) progress = 100;
+            if(!duration) return;
 
-        const bar =
-          document.getElementById(
-            `progress-${id}`
-          );
+            let progress =
+                ((nowMinutes - startMinutes)
+                / duration) * 100;
 
-        if(bar){
-          bar.style.width =
-            progress + "%";
-        }
+            if(progress < 0) progress = 0;
+            if(progress > 100) progress = 100;
 
-      });
+            const bar =
+                document.getElementById(
+                    `progress-${id}`
+                );
+
+            if(bar){
+                bar.style.width =
+                    progress + "%";
+            }
+
+        });
 
     });
 
