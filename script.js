@@ -55,6 +55,7 @@ function loadCourses(){
 
 }
 
+
 // 音を有効にする
 function enableSound(){
 
@@ -67,20 +68,36 @@ function enableSound(){
         return;
     }
 
-    if(!audioContext){
-        audioContext = new AudioCtx();
+    try {
+
+        // 音声機能を作成
+        if(!audioContext){
+            audioContext = new AudioCtx();
+        }
+
+        // Safariの音声を再開してからテスト音を鳴らす
+        audioContext.resume().then(function(){
+
+            playAlarm(1000);
+
+            // 通知が残っている場合は通知音も再開
+            startAlarmSound();
+
+        }).catch(function(error){
+
+            console.error("音声再生エラー:", error);
+            alert("音声を開始できませんでした。もう一度お試しください。");
+
+        });
+
+    } catch(error){
+
+        console.error("音声エラー:", error);
+        alert("音声の初期化に失敗しました。");
+
     }
-
-    if(audioContext.state === "suspended"){
-        audioContext.resume();
-    }
-
-    // 動作確認音
-    playAlarm(800);
-
-    // 通知が残っていれば音を開始
-    startAlarmSound();
 }
+
 
 
 // 音を鳴らす
