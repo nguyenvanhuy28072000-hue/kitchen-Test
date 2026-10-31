@@ -102,27 +102,21 @@ function enableSound(){
 
 // 音を鳴らす
 function playAlarm(frequency){
-
     if(!audioContext) return;
 
-    const oscillator =
-        audioContext.createOscillator();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
 
-    const gain =
-        audioContext.createGain();
-
+    oscillator.type = "sawtooth";
     oscillator.frequency.value = frequency;
 
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
 
-    gain.gain.value = 0.3;
+    gain.gain.value = 0.25;
 
     oscillator.start();
-
-    oscillator.stop(
-        audioContext.currentTime + 0.3
-    );
+    oscillator.stop(audioContext.currentTime + 0.3);
 }
 
 
@@ -132,28 +126,28 @@ function startAlarmSound(){
     if(!audioContext) return;
     if(alarmSoundStopped) return;
     if(soundInterval) return;
+    if(Object.keys(activeNotifications).length === 0) return;
 
-    if(Object.keys(activeNotifications).length === 0){
-        return;
-    }
+    let emergency = false;
 
-    // 1.5秒ごとに音を鳴らす
+    Object.keys(activeNotifications).forEach(function(key){
+        if(activeNotifications[key].stage === "passed"){
+            emergency = true;
+        }
+    });
+
     soundInterval = setInterval(function(){
 
-        let frequency = 700;
+        if(emergency){
+            playAlarm(1200);
+            setTimeout(function(){
+                playAlarm(800);
+            }, 350);
+        }else{
+            playAlarm(700);
+        }
 
-        // L.O.過ぎの通知があれば高い音にする
-        Object.keys(activeNotifications).forEach(function(key){
-
-            if(activeNotifications[key].stage === "passed"){
-                frequency = 1200;
-            }
-
-        });
-
-        playAlarm(frequency);
-
-    }, 1500);
+    }, 800);
 }
 
 
