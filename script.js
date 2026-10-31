@@ -702,7 +702,7 @@ if(order.extraDishes){
 
     `
 
-    +
+    + 
 
     waitingHtml;
 }
